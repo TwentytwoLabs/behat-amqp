@@ -1,6 +1,6 @@
 <?php
 
-namespace TwentytwoLabs\BehatAmqp\Factory;
+namespace TwentytwoLabs\BehatAmqpExtension\Factory;
 
 use Swarrot\Broker\MessageProvider\MessageProviderInterface;
 use Swarrot\Broker\MessageProvider\PeclPackageMessageProvider;

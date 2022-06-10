@@ -3,4 +3,4 @@ default:
         default:
             paths: [ %paths.base%/features ]
             contexts:
-                - TwentytwoLabs\BehatAmqp\Context\AmqpContext
+                - TwentytwoLabs\BehatAmqpExtension\Context\AmqpContext
