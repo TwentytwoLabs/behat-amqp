@@ -7,16 +7,9 @@ namespace TwentytwoLabs\BehatAmqpExtension\ServiceContainer;
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
 use Behat\Testwork\ServiceContainer\ExtensionManager;
-use JsonSchema\Validator;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\Serializer\Encoder\ChainDecoder;
-use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Encoder\YamlEncoder;
-use TwentytwoLabs\Api\Decoder\Adapter\SymfonyDecoderAdapter;
-use TwentytwoLabs\Api\Validator\MessageValidator;
 use TwentytwoLabs\ArrayComparator\Comparator\ComparatorChain;
 use TwentytwoLabs\ArrayComparator\Comparator\DateComparator;
 use TwentytwoLabs\ArrayComparator\Comparator\DateTimeComparator;
@@ -24,10 +17,8 @@ use TwentytwoLabs\ArrayComparator\Comparator\IntegerComparator;
 use TwentytwoLabs\ArrayComparator\Comparator\SameComparator;
 use TwentytwoLabs\ArrayComparator\Comparator\StringComparator;
 use TwentytwoLabs\ArrayComparator\Comparator\UuidComparator;
-use TwentytwoLabs\BehatAmqp\Initializer\AmqpInitializer;
+use TwentytwoLabs\BehatAmqpExtension\Initializer\AmqpInitializer;
 use TwentytwoLabs\BehatAmqpExtension\Factory\SwarrotFactory;
-use TwentytwoLabs\BehatOpenApiExtension\Initializer\JsonInitializer;
-use TwentytwoLabs\BehatOpenApiExtension\Initializer\OpenApiInitializer;
 
 /**
  * class BehatAmqpExtension.

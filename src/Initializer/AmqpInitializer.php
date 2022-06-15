@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TwentytwoLabs\BehatAmqp\Initializer;
+namespace TwentytwoLabs\BehatAmqpExtension\Initializer;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Initializer\ContextInitializer;

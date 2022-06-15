@@ -12,7 +12,7 @@ use Swarrot\Processor\Stack\StackedProcessor;
 class SwarrotFactory
 {
     protected \AMQPConnection $connection;
-    protected ?\AMQPExchange $exchange;
+    protected ?\AMQPExchange $exchange = null;
     protected array $queues;
     protected array $messageProviders;
 
