@@ -2,32 +2,42 @@
 
 declare(strict_types=1);
 
-namespace TwentytwoLabs\BehatAmqp\Context;
+namespace TwentytwoLabs\BehatAmqpExtension\Context;
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Swarrot\Processor\ProcessorInterface;
 use Symfony\Component\Yaml\Yaml;
-use TwentytwoLabs\BehatAmqp\Factory\SwarrotFactory;
-use TwentytwoLabs\BehatAmqp\Processor\MessageProcessor;
-use TwentytwoLabs\BehatAmqp\Publisher\MessagePublisher;
+use TwentytwoLabs\ArrayComparator\AsserterTrait as ArrayComparatorAssert;
+use TwentytwoLabs\BehatAmqpExtension\AsserterTrait;
+use TwentytwoLabs\BehatAmqpExtension\Factory\SwarrotFactory;
+use TwentytwoLabs\BehatAmqpExtension\Processor\MessageProcessor;
+use TwentytwoLabs\BehatAmqpExtension\Publisher\MessagePublisher;
 
 class AmqpContext implements Context
 {
+    use ArrayComparatorAssert;
+    use AsserterTrait;
+
     protected SwarrotFactory $factory;
     protected ProcessorInterface $processor;
     protected MessagePublisher $publisher;
 
-    public function __construct(
-        string $host = 'localhost',
-        int $port = 5672,
-        string $vhost = '/',
-        string $login = 'guest',
-        string $password = 'guest'
-    ) {
-        $this->factory = new SwarrotFactory($host, $port, $vhost, $login, $password);
+    public function __construct()
+    {
         $this->processor = new MessageProcessor();
-        $this->publisher = new MessagePublisher($this->factory->getExchange());
+    }
+
+    /**
+     * @Then I purge queue :queueName
+     */
+    public function iPurgeQueue(string $queueName): void
+    {
+        $purged = $this->factory->getQueue($queueName)->purge();
+
+        if (false === $purged) {
+            throw new \Exception("Could not purge queue $queueName");
+        }
     }
 
     /**
@@ -55,15 +65,11 @@ class AmqpContext implements Context
     }
 
     /**
-     * @Then I purge queue :queueName
+     * @Given I wait :sleep second(s)
      */
-    public function iPurgeQueue(string $queueName): void
+    public function iWait(int $sleep): void
     {
-        $purged = $this->factory->getQueue($queueName)->purge();
-
-        if (false === $purged) {
-            throw new \Exception("Could not purge queue $queueName");
-        }
+        sleep($sleep);
     }
 
     /**
@@ -87,14 +93,6 @@ class AmqpContext implements Context
         if (empty($count)) {
             throw new \Exception(sprintf('There is %d message(s) in the queue at this moment.', $count));
         }
-    }
-
-    /**
-     * @Given I wait :sleep second(s)
-     */
-    public function iWait(int $sleep): void
-    {
-        sleep($sleep);
     }
 
     /**
@@ -198,118 +196,11 @@ class AmqpContext implements Context
         print_r($this->processor->getMessage()->getProperties());
     }
 
-    /**
-     * @throws \Exception
-     */
-    protected function assertArrayHasKey(string $key, array $array): void
+    public function setFactory(SwarrotFactory $factory): self
     {
-        if (array_key_exists($key, $array)) {
-            return;
-        }
+        $this->factory = $factory;
+        $this->publisher = new MessagePublisher($this->factory->getExchange());
 
-        throw new \Exception("$key not found");
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function assertEquals(string $expected, string $actual): void
-    {
-        if ($expected === $actual) {
-            return;
-        }
-
-        throw new \Exception("$actual does not match expected \"$expected\"");
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function assertContains(string $item, string $content): void
-    {
-        if (preg_match("/$item/", $content)) {
-            return;
-        }
-
-        throw new \Exception("$item not found in \"$content\"");
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function assertValuesOfJson(array $expectedItem, array $item): void
-    {
-        foreach ($expectedItem as $key => $expected) {
-            if ('<int>' === $expected) {
-                $this->assertTrue(\is_int($item[$key]));
-            } elseif ('<string>' === $expected) {
-                $this->assertTrue(\is_string($item[$key]) && !empty($item[$key]));
-            } elseif ('<uuid>' === $expected) {
-                $this->assertTrue(!empty($item[$key]));
-            } elseif ('<dateTime>' === $expected) {
-                $this->assertRegex('#[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]{2}:[0-9]{2}#', $item[$key]);
-            } elseif ('<array>' === $expected) {
-                $this->assertTrue(\is_array($item[$key]) && !empty($item[$key]));
-            } elseif (\is_array($expected)) {
-                $this->assertKeysOfJson(array_keys($expected), array_keys($item[$key]), $key);
-                $this->assertValuesOfJson($expected, $item[$key]);
-            } elseif ('<date>' === $expected) {
-                $this->assertRegex('#[0-9]{4}-[0-9]{2}-[0-9]{2}#', $item[$key]);
-            } else {
-                $this->assertSame($expected, $item[$key]);
-            }
-        }
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function assertKeysOfJson(array $expectedKeys, array $columns, ?string $parent = null): void
-    {
-        $keys = array_diff($expectedKeys, $columns);
-        $keysMissing = array_diff($columns, $expectedKeys);
-
-        $message = null;
-        $messageParent = null === $parent ? '' : sprintf(' in parent %s', $parent);
-
-        if (!empty($keys)) {
-            $message = sprintf('Keys [%s] must not be present %s', implode(', ', $keys), $messageParent);
-        }
-
-        if (!empty($keysMissing)) {
-            $message = sprintf('%sKeys [%s] are missing %s', null !== $message ? $message.' and ' : '', implode(', ', $keysMissing), $messageParent);
-        }
-
-        $this->assertTrue(null === $message, $message);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function assertTrue($value, $message = 'The value is false'): void
-    {
-        $this->assert($value, $message);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function assertSame($expected, $actual, $message = null): void
-    {
-        $this->assert($expected === $actual, $message ?: "The element '$actual' is not equal to '$expected'");
-    }
-
-    protected function assert($test, $message): void
-    {
-        if (false === $test) {
-            throw new \Exception($message);
-        }
-    }
-
-    private function assertRegex(string $regex, string $actual): void
-    {
-        if (0 === preg_match($regex, $actual)) {
-            throw new \Exception(sprintf("The node value is '%s'", json_encode($actual)));
-        }
+        return $this;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace TwentytwoLabs\BehatAmqp\Processor;
+namespace TwentytwoLabs\BehatAmqpExtension\Processor;
 
 use Swarrot\Broker\Message;
 use Swarrot\Processor\ProcessorInterface;

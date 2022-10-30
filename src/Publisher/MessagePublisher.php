@@ -1,6 +1,6 @@
 <?php
 
-namespace TwentytwoLabs\BehatAmqp\Publisher;
+namespace TwentytwoLabs\BehatAmqpExtension\Publisher;
 
 use Swarrot\Broker\Message;
 use Swarrot\Broker\MessagePublisher\MessagePublisherInterface;

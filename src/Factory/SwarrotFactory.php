@@ -1,6 +1,6 @@
 <?php
 
-namespace TwentytwoLabs\BehatAmqp\Factory;
+namespace TwentytwoLabs\BehatAmqpExtension\Factory;
 
 use Swarrot\Broker\MessageProvider\MessageProviderInterface;
 use Swarrot\Broker\MessageProvider\PeclPackageMessageProvider;
@@ -12,7 +12,7 @@ use Swarrot\Processor\Stack\StackedProcessor;
 class SwarrotFactory
 {
     protected \AMQPConnection $connection;
-    protected ?\AMQPExchange $exchange;
+    protected ?\AMQPExchange $exchange = null;
     protected array $queues;
     protected array $messageProviders;
 
